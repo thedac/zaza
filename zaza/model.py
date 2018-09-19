@@ -1205,7 +1205,15 @@ def prepare_series_upgrade(machine_num, to_series="xenial"):
     juju_model = get_juju_model()
     cmd = ["juju", "upgrade-series", "-m", juju_model,
            "prepare", machine_num, to_series, "--agree"]
-    subprocess.check_call(cmd)
+    try:
+        subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as e:
+        if "no such request " in e.output.decode('UTF-8'):
+            logging.warning("{} Ignoring..."
+                            .format(e.output.decode('UTF-8').strip()))
+        else:
+            logging.error(e.output.decode('UTF-8').strip())
+            raise e
 
 
 def complete_series_upgrade(machine_num):
@@ -1223,7 +1231,15 @@ def complete_series_upgrade(machine_num):
     juju_model = get_juju_model()
     cmd = ["juju", "upgrade-series", "-m", juju_model,
            "complete", machine_num]
-    subprocess.check_call(cmd)
+    try:
+        subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as e:
+        if "no such request " in e.output.decode('UTF-8'):
+            logging.warning("{} Ignoring..."
+                            .format(e.output.decode('UTF-8').strip()))
+        else:
+            logging.error(e.output.decode('UTF-8').strip())
+            raise e
 
 
 def set_series(application, to_series):
